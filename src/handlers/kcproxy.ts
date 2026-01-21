@@ -150,7 +150,7 @@ kcRoute.post("/realms/mangadex/protocol/openid-connect/auth", async (c) => {
         "POST",
         form.toString()
     );
-    const jsonData = await resp.json();
+    const jsonData: any = await resp.json();
     const userInfo = await sendRequest(
         "https://auth.mangadex.org/realms/mangadex/protocol/openid-connect/userinfo",
         {
@@ -159,9 +159,9 @@ kcRoute.post("/realms/mangadex/protocol/openid-connect/auth", async (c) => {
         },
         "GET"
     );
-    const userInfoData = await userInfo.json();
+    const userInfoData: any = await userInfo.json();
     jsonData.profile = userInfoData;
-    const b64Content = Buffer.from(JSON.stringify(jsonData)).toString('base64');
+    const b64Content = btoa(JSON.stringify(jsonData));
     return c.redirect(`/keycloak/login?response=${b64Content}`);
 });
 
