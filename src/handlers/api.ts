@@ -39,9 +39,16 @@ export async function handleApiProxy(c: Context) {
     const responseHeaders = getResponseHeaders(res);
     
     if (!res.ok && res.body) {
-        return c.body(res.body, res.status as any, responseHeaders);
+        return new Response(res.body, { status: res.status, headers: responseHeaders as unknown as HeadersInit });
     } else if (!res.ok) {
         return c.status(res.status as any);
+    }
+    
+    // Check if response is JSON before parsing
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+        // Return non-JSON response as-is
+        return new Response(res.body, { status: res.status, headers: responseHeaders });
     }
     
     const resBody: any = await res.json();
