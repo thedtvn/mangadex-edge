@@ -1,6 +1,8 @@
 {
 	"name": "mangadex-edge",
 	"type": "module",
+	"license": "MIT",
+	"version": "0.0.1",
 	"scripts": {
 		"dev": "wrangler dev",
 		"deploy": "wrangler deploy --minify",
