@@ -89,7 +89,6 @@ kcRoute.post("/realms/mangadex/protocol/openid-connect/auth", async (c) => {
     params.append("scope", scope);
     params.append("code_challenge", backendChallenge);
     params.append("code_challenge_method", "S256");
-    console.log("url params:", params.toString());
     const req = await fetch(url + "?" + params.toString(), {
         headers: DEFAULT_HEADERS,
     });
@@ -101,7 +100,6 @@ kcRoute.post("/realms/mangadex/protocol/openid-connect/auth", async (c) => {
         return c.redirect(urlObj.toString());
     }
     const cookies = req.headers.getAll("set-cookie") || "";
-    console.log("posting to:", cookies);
     const postReq = await fetch(postUrl, {
         method: "POST",
         headers: {

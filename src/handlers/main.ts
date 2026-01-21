@@ -8,7 +8,6 @@ import { modifyHtml } from "../utils/html";
  * Route: *
  */
 export async function handleMainProxy(c: Context) {
-    console.log("Main request:", c.req.url);
     
     const body = await c.req.arrayBuffer();
     const url = new URL(c.req.url);
