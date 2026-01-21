@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Keycloak</title>
+</head>
+
+<body>
+    <script>
+
+        function uuidv4() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const responseB64 = urlParams.get('response');
+        if (responseB64) {
+            for (const key of Object.keys(localStorage)) {
+                if (key.startsWith('oidc.')) {
+                    localStorage.removeItem(key);
+                }
+            }
+            const responseJson = atob(responseB64.replace(/-/g, '+').replace(/_/g, '/'));
+            const response = JSON.parse(responseJson);
+            delete response["not-before-policy"];
+            response.profile = {
+                "exp": Date.now() / 1000 + response.expires_in,
+                "iat": Date.now() / 1000,
+                "iss": "https://auth.mangadex.org/realms/mangadex",
+                "aud": "mangadex-frontend-stable",
+                "sub": uuidv4(),
+                "typ": "ID",
+                "session_state": response.session_state,
+                ...response.profile
+            };
+
+            localStorage.setItem(`oidc.user:${location.origin}/keycloak/realms/mangadex:mangadex-frontend-stable`, JSON.stringify(response));
+            fetch('/api/auth/check', { 
+                headers: {
+                    authorization: `${response.token_type} ${response.access_token}`
+                }
+            }).then((r) => {
+                if (r.ok) window.location.href = '/';
+            });
+        }
+    </script>
+</body>
+
+</html>
