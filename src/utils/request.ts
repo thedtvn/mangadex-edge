@@ -6,12 +6,14 @@ export async function sendRequest(
     url: string,
     headers: Record<string, string>,
     method: string,
-    body?: any
+    body?: any,
+    redirect: "follow" | "error" | "manual" = "follow"
 ): Promise<Response> {
     return fetch(url, {
         body,
         headers,
-        method
+        method,
+        redirect
     });
 }
 
