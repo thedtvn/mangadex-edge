@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { DEFAULT_HEADERS } from "../constants/headers";
-import { sendRequest, getResponseHeaders } from "../utils/request";
+import { sendRequest, getResponseHeaders, convertHeadersResponseHeaders } from "../utils/request";
 
 /**
  * Handle API proxy requests to MangaDex API
@@ -38,9 +38,8 @@ export async function handleApiProxy(c: Context) {
     
     const responseHeaders = getResponseHeaders(res);
     
-    if (!res.ok && res.body) {
-        return new Response(res.body, { status: res.status, headers: responseHeaders });
-    } else if (!res.ok) {
+    // Handle none body responses
+    if (!res.body) {
         return c.status(res.status as any);
     }
     
@@ -48,7 +47,7 @@ export async function handleApiProxy(c: Context) {
     const contentType = res.headers.get("content-type") || "";
     if (!contentType.includes("application/json")) {
         // Return non-JSON response as-is
-        return new Response(res.body, { status: res.status, headers: responseHeaders });
+        return new Response(res.body, { status: res.status, headers: convertHeadersResponseHeaders(responseHeaders) });
     }
     
     const resBody: any = await res.json();

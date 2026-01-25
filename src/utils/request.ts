@@ -6,28 +6,34 @@ export async function sendRequest(
     url: string,
     headers: Record<string, string>,
     method: string,
-    body?: any,
-    redirect: "follow" | "error" | "manual" = "follow"
+    body?: any
 ): Promise<Response> {
     return fetch(url, {
         body,
         headers,
-        method,
-        redirect
+        method
     });
 }
 
 /**
  * Convert response headers to object
  */
-export function getResponseHeaders(res: Response): Record<string, string> {
-    const headers: Record<string, string> = {};
+export function getResponseHeaders(res: Response): Record<string, string[]> {
+    const headers: Record<string, string[]> = {};
     res.headers.forEach((value, key) => {
         if (headers[key]) {
-            headers[key] += `, ${value}`;
+            headers[key].push(value);
         } else {
-            headers[key] = value;
+            headers[key] = [value];
         }
     });
     return headers; 
+}
+
+export function convertHeadersResponseHeaders(res: Record<string, string[]>): Record<string, string> {
+    const headers: Record<string, string> = {};
+    for (const key in res) {
+        headers[key] = res[key].join(', ');
+    }
+    return headers;
 }
