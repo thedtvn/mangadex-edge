@@ -28,8 +28,9 @@
             const responseJson = atob(responseB64.replace(/-/g, '+').replace(/_/g, '/'));
             const response = JSON.parse(responseJson);
             delete response["not-before-policy"];
+            const tokenExp = Math.round(Date.now() / 1000 + response.expires_in);
             response.profile = {
-                "exp": Math.round(Date.now() / 1000 + response.expires_in),
+                "exp": tokenExp,
                 "iat": Math.round(Date.now() / 1000),
                 "iss": "https://auth.mangadex.org/realms/mangadex",
                 "aud": "mangadex-frontend-stable",
@@ -38,7 +39,9 @@
                 "session_state": response.session_state,
                 ...response.profile
             };
-
+            response.expires_at = tokenExp;
+            delete response.expires_in;
+            delete response.refresh_expires_in;
             localStorage.setItem(`oidc.user:${location.origin}/keycloak/realms/mangadex:mangadex-frontend-stable`, JSON.stringify(response));
             fetch('/api/auth/check', { 
                 headers: {
