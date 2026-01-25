@@ -39,7 +39,7 @@ export async function handleApiProxy(c: Context) {
     const responseHeaders = getResponseHeaders(res);
     
     if (!res.ok && res.body) {
-        return new Response(res.body, { status: res.status, headers: responseHeaders as unknown as HeadersInit });
+        return new Response(res.body, { status: res.status, headers: responseHeaders });
     } else if (!res.ok) {
         return c.status(res.status as any);
     }

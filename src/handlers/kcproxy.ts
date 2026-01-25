@@ -2,14 +2,11 @@ import { Hono } from "hono";
 import { DEFAULT_HEADERS } from "../constants/headers";
 import { sendRequest, getResponseHeaders } from "../utils/request";
 import kcLoginHtml from "../resources/kcLogin.html";
-import kcLoHtml from "../resources/kcLo.html";
+import kcApplyLoginTokenHtml from "../resources/kcApplyLoginToken.html";
 
 const app = new Hono();
 
 const kcRoute = app.basePath("/keycloak/");
-
-// Store code_verifier for each state
-const stateVerifierMap = new Map<string, string>();
 
 // Generate random code_verifier (43 characters for PKCE)
 function generateCodeVerifier(): string {
@@ -74,12 +71,8 @@ kcRoute.post("/realms/mangadex/protocol/openid-connect/auth", async (c) => {
     const username = body.get("username");
     const rememberMe = body.get("rememberMe") == "1";
     
-    // Generate backend code_verifier and code_challenge (ignore frontend's)
     const backendVerifier = generateCodeVerifier();
     const backendChallenge = await generateCodeChallenge(backendVerifier);
-    
-    // Store code_verifier with state as key
-    stateVerifierMap.set(state, backendVerifier);
     
     const params = new URLSearchParams();
     params.append("client_id", client_id);
@@ -89,9 +82,11 @@ kcRoute.post("/realms/mangadex/protocol/openid-connect/auth", async (c) => {
     params.append("scope", scope);
     params.append("code_challenge", backendChallenge);
     params.append("code_challenge_method", "S256");
-    const req = await fetch(url + "?" + params.toString(), {
-        headers: DEFAULT_HEADERS,
-    });
+    const req = await sendRequest(
+        url + "?" + params.toString(),
+        DEFAULT_HEADERS,
+        "GET"
+    );
     const bodyText = await req.text();
     const postUrl = bodyText.match(/action="([^"]+)"/)?.[1].replaceAll("&amp;", "&");
     if (!postUrl) {
@@ -100,21 +95,22 @@ kcRoute.post("/realms/mangadex/protocol/openid-connect/auth", async (c) => {
         return c.redirect(urlObj.toString());
     }
     const cookies = req.headers.getAll("set-cookie") || "";
-    const postReq = await fetch(postUrl, {
-        method: "POST",
-        headers: {
+    const postReq = await sendRequest(
+        postUrl,
+        {
             ...DEFAULT_HEADERS,
             "cookie": cookies.join("; "),
             "content-type": "application/x-www-form-urlencoded"
         },
-        body: new URLSearchParams({
+        "POST",
+        new URLSearchParams({
             username: username as string,
             password: password as string,
             credentialId: "",
             rememberMe: rememberMe ? "on" : "off"
-        }),
-        redirect: "manual"
-    });
+        }).toString(),
+        "manual"
+    );
     const location = postReq.headers.get("location");
     if (!location?.startsWith("https://mangadex.org")) {
         const urlObj = new URL(c.req.url);
@@ -124,21 +120,12 @@ kcRoute.post("/realms/mangadex/protocol/openid-connect/auth", async (c) => {
     const searchParams = new URL(location).searchParams;
     const code = searchParams.get("code");
     
-    // Retrieve the code_verifier we generated and stored earlier
-    const storedVerifier = stateVerifierMap.get(state);
-    if (!storedVerifier) {
-        return c.json({ error: "invalid_state", error_description: "State not found" }, 400);
-    }
-    
-    // Clean up the stored verifier
-    stateVerifierMap.delete(state);
-    
     const form = new URLSearchParams();
     form.append("grant_type", "authorization_code");
     form.append("client_id", client_id as string);
     form.append("code", code as string);
     form.append("redirect_uri", "https://mangadex.org/auth/login?afterAuthentication=/&shouldRedirect=true&wasPopup=false");
-    form.append("code_verifier", storedVerifier);
+    form.append("code_verifier", backendVerifier);
     const resp = await sendRequest(
         "https://auth.mangadex.org/realms/mangadex/protocol/openid-connect/token",
         {
@@ -163,8 +150,37 @@ kcRoute.post("/realms/mangadex/protocol/openid-connect/auth", async (c) => {
     return c.redirect(`/keycloak/login?response=${b64Content}`);
 });
 
+kcRoute.post("/realms/mangadex/protocol/openid-connect/token", async (c) => {
+    const url = `https://auth.mangadex.org/realms/mangadex/protocol/openid-connect/token`;
+    
+    const body = await c.req.arrayBuffer();
+    const res = await sendRequest(
+        url,
+        { 
+            ...DEFAULT_HEADERS, 
+            "content-type": "application/x-www-form-urlencoded",
+            "referer": "https://mangadex.org/",
+            "origin": "https://mangadex.org"
+        },
+        c.req.method,
+        body.byteLength ? body : undefined
+    );
+    const responseHeaders = getResponseHeaders(res);
+    if (!res.ok && res.body) {
+        return c.body(res.body, res.status as any, responseHeaders);
+    } else if (!res.ok) {
+        return c.status(res.status as any);
+    }
+    const resBody: any = await res.json();
+    return c.json(resBody, res.status as any, responseHeaders);
+});
+
 kcRoute.get("login", async (c) => {
-    return c.html(kcLoHtml);
+    // If no response param, redirect to homepage
+    if (!c.req.query("response")) {
+        return c.redirect("/");
+    };
+    return c.html(kcApplyLoginTokenHtml);
 });
 
 kcRoute.get("/realms/mangadex/protocol/openid-connect/logout", async (c) => {

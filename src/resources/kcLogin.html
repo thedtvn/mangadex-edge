@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1a1a1a;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -147,6 +148,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <div class="login-header">
@@ -178,17 +180,33 @@
     </div>
 
     <script>
+        const token = localStorage.getItem(`oidc.user:${location.origin}/keycloak/realms/mangadex:mangadex-frontend-stable`);
+        if (token) {
+            try {
+                const response = JSON.parse(token);
+                fetch('/api/auth/check', {
+                    headers: {
+                        authorization: `${response.token_type} ${response.access_token}`
+                    }
+                }).then((r) => {
+                    if (!r.ok) window.location.href = '/';
+                });
+            } catch (e) {
+                localStorage.removeItem(`oidc.user:${location.origin}/keycloak/realms/mangadex:mangadex-frontend-stable`);
+            }
+        }
+
         // Handle form submission with basic client-side validation
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
-            
+
             if (!username || !password) {
                 e.preventDefault();
                 showError('Please fill in all fields');
                 return false;
             }
-            
+
             // Form will submit normally to itself (POST to current URL)
         });
 
@@ -196,7 +214,7 @@
             const errorDiv = document.getElementById('errorMessage');
             errorDiv.textContent = message;
             errorDiv.classList.add('show');
-            
+
             setTimeout(() => {
                 errorDiv.classList.remove('show');
             }, 5000);
@@ -206,7 +224,7 @@
             const successDiv = document.getElementById('successMessage');
             successDiv.textContent = message;
             successDiv.classList.add('show');
-            
+
             setTimeout(() => {
                 successDiv.classList.remove('show');
             }, 5000);
@@ -216,14 +234,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get('error');
         const success = urlParams.get('success');
-        
+
         if (error) {
             showError(decodeURIComponent(error));
         }
-        
+
         if (success) {
             showSuccess(decodeURIComponent(success));
         }
     </script>
 </body>
+
 </html>
