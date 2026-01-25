@@ -29,8 +29,8 @@
             const response = JSON.parse(responseJson);
             delete response["not-before-policy"];
             response.profile = {
-                "exp": Date.now() / 1000 + response.expires_in,
-                "iat": Date.now() / 1000,
+                "exp": Math.round(Date.now() / 1000 + response.expires_in),
+                "iat": Math.round(Date.now() / 1000),
                 "iss": "https://auth.mangadex.org/realms/mangadex",
                 "aud": "mangadex-frontend-stable",
                 "sub": uuidv4(),

@@ -171,6 +171,7 @@ kcRoute.get("/realms/mangadex/protocol/openid-connect/logout", async (c) => {
     return c.html(`
     <script>
         for (const key of Object.keys(localStorage)) {
+            if (!key.startsWith('oidc.user:')) continue;
             localStorage.removeItem(key);
         }
         window.location.href = '/';
