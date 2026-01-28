@@ -6,7 +6,7 @@ export function getCustomConfig(url: URL) {
             apiUrl: url.origin + "/api",
             baseUrl: url.origin,
             cdnEdge: url.origin,
-            cdnOrigin: "https://uploads.mangadex.org",
+            cdnOrigin: url.origin + "/uploads",
             embedUrl: "https://e-embed.mangadex.org",
             kcUrl: url.origin + "/keycloak",
             kcClientId: "mangadex-frontend-stable",
@@ -18,7 +18,7 @@ export function getCustomConfig(url: URL) {
                 tierT2Id: "Z3KR42gq",
                 tierT3Id: "eFT9F7qn"
             },
-            gtmId: "GTM-TS59XX9",
+            gtmId: "",
             popularTitlesDeltaDays: "30",
             recaptchaSiteKey: "6LflOrIaAAAAACcpRSiKQlt_X6bq-QcVjHTG1diJ",
             siteUpdatesCheckIntervalSeconds: 3600,
