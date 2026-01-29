@@ -20,7 +20,7 @@ app.all("/uploads/*", handleUploadProxy);
 // Prevent web crawlers from indexing the proxy
 app.all("/robots.txt", async (c) => {
     return c.text("User-agent: *\nDisallow: /", 200, { "Content-Type": "text/plain" });
-}
+});
 
 // Main MangaDex site proxy (catch-all)
 app.all("*", handleMainProxy);
