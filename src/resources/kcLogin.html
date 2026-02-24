@@ -189,7 +189,7 @@
                         authorization: `${response.token_type} ${response.access_token}`
                     }
                 }).then((r) => {
-                    if (!r.ok) window.location.href = '/';
+                    if (r.ok) window.location.href = '/';
                 });
             } catch (e) {
                 localStorage.removeItem(`oidc.user:${location.origin}/keycloak/realms/mangadex:mangadex-frontend-stable`);
