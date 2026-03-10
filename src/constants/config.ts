@@ -1,8 +1,40 @@
-export function getCustomConfig(url: URL) {
+export interface NuxtConfig {
+    public?: {
+        environmentType?: string;
+        version?: string;
+        apiUrl?: string;
+        baseUrl?: string;
+        cdnEdge?: string;
+        cdnOrigin?: string;
+        embedUrl?: string;
+        kcUrl?: string;
+        kcClientId?: string;
+        forumsUrl?: string;
+        paymentsUrl?: string;
+        subscription?: Record<string, string>;
+        gtmId?: string;
+        popularTitlesDeltaDays?: string;
+        recaptchaSiteKey?: string;
+        siteUpdatesCheckIntervalSeconds?: number;
+        stripeManageUrl?: string;
+        [key: string]: unknown;
+    };
+    app?: {
+        baseURL?: string;
+        buildId?: string;
+        buildAssetsDir?: string;
+        cdnURL?: string;
+        [key: string]: unknown;
+    };
+    [key: string]: unknown;
+}
+
+export function getCustomConfig(url: URL, originalConfig?: NuxtConfig | null): NuxtConfig {
     return {
+        ...originalConfig,
         public: {
+            ...originalConfig?.public,
             environmentType: "stable",
-            version: "git-20260117-1312-9f772127",
             apiUrl: url.origin + "/api",
             baseUrl: url.origin,
             cdnEdge: url.origin,
@@ -12,21 +44,13 @@ export function getCustomConfig(url: URL) {
             kcClientId: "mangadex-frontend-stable",
             forumsUrl: "https://forums.mangadex.org",
             paymentsUrl: "https://payment.mangadex.org",
-            subscription: {
-                organizationId: "XiXPVXKm",
-                tierT1Id: "ikMUb3xM",
-                tierT2Id: "Z3KR42gq",
-                tierT3Id: "eFT9F7qn"
-            },
             gtmId: "",
-            popularTitlesDeltaDays: "30",
             recaptchaSiteKey: "6LflOrIaAAAAACcpRSiKQlt_X6bq-QcVjHTG1diJ",
-            siteUpdatesCheckIntervalSeconds: 3600,
             stripeManageUrl: "https://billing.stripe.com/p/login/14A4gz6uFeba8Z77u68so00"
         },
         app: {
+            ...originalConfig?.app,
             baseURL: "/",
-            buildId: "5bbd8219-957e-4baf-be8a-9ba2a68209be",
             buildAssetsDir: "/_nuxt/",
             cdnURL: "",
         }
