@@ -50,6 +50,7 @@ export function getCustomConfig(url: URL, originalConfig?: NuxtConfig | null): N
         },
         app: {
             ...originalConfig?.app,
+            buildId: originalConfig?.app?.buildId ?? "",
             baseURL: "/",
             buildAssetsDir: "/_nuxt/",
             cdnURL: "",
