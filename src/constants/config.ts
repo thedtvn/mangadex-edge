@@ -30,35 +30,27 @@ export interface NuxtConfig {
 }
 
 export function getCustomConfig(url: URL, originalConfig?: NuxtConfig | null): NuxtConfig {
-    const result: NuxtConfig = {
-        ...originalConfig,
-        public: {
-            ...originalConfig?.public,
-            environmentType: "stable",
-            apiUrl: url.origin + "/api",
-            baseUrl: url.origin,
-            cdnEdge: url.origin,
-            cdnOrigin: url.origin + "/uploads",
-            embedUrl: "https://e-embed.mangadex.org",
-            kcUrl: url.origin + "/keycloak",
-            kcClientId: "mangadex-frontend-stable",
-            forumsUrl: "https://forums.mangadex.org",
-            paymentsUrl: "https://payment.mangadex.org",
-            gtmId: "",
-            recaptchaSiteKey: "6LflOrIaAAAAACcpRSiKQlt_X6bq-QcVjHTG1diJ",
-            stripeManageUrl: "https://billing.stripe.com/p/login/14A4gz6uFeba8Z77u68so00"
-        },
-        app: {
-            ...originalConfig?.app,
-            baseURL: "/",
-            buildAssetsDir: "/_nuxt/",
-            cdnURL: "",
-        }
-    };
+    const config: NuxtConfig = originalConfig ? structuredClone(originalConfig) : {};
     
-    if (originalConfig?.app?.buildId) {
-        result.app!.buildId = originalConfig.app.buildId;
-    }
+    if (!config.public) config.public = {};
+    config.public.environmentType = "stable";
+    config.public.apiUrl = url.origin + "/api";
+    config.public.baseUrl = url.origin;
+    config.public.cdnEdge = url.origin;
+    config.public.cdnOrigin = url.origin + "/uploads";
+    config.public.embedUrl = "https://e-embed.mangadex.org";
+    config.public.kcUrl = url.origin + "/keycloak";
+    config.public.kcClientId = "mangadex-frontend-stable";
+    config.public.forumsUrl = "https://forums.mangadex.org";
+    config.public.paymentsUrl = "https://payment.mangadex.org";
+    config.public.gtmId = "";
+    config.public.recaptchaSiteKey = "6LflOrIaAAAAACcpRSiKQlt_X6bq-QcVjHTG1diJ";
+    config.public.stripeManageUrl = "https://billing.stripe.com/p/login/14A4gz6uFeba8Z77u68so00";
     
-    return result;
+    if (!config.app) config.app = {};
+    config.app.baseURL = "/";
+    config.app.buildAssetsDir = "/_nuxt/";
+    config.app.cdnURL = "";
+    
+    return config;
 }
