@@ -30,7 +30,7 @@ export interface NuxtConfig {
 }
 
 export function getCustomConfig(url: URL, originalConfig?: NuxtConfig | null): NuxtConfig {
-    return {
+    const result: NuxtConfig = {
         ...originalConfig,
         public: {
             ...originalConfig?.public,
@@ -50,10 +50,15 @@ export function getCustomConfig(url: URL, originalConfig?: NuxtConfig | null): N
         },
         app: {
             ...originalConfig?.app,
-            buildId: originalConfig?.app?.buildId ?? "",
             baseURL: "/",
             buildAssetsDir: "/_nuxt/",
             cdnURL: "",
         }
     };
+    
+    if (originalConfig?.app?.buildId) {
+        result.app!.buildId = originalConfig.app.buildId;
+    }
+    
+    return result;
 }
