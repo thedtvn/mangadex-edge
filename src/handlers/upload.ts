@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { DEFAULT_HEADERS } from "../constants/headers";
 import { sendRequest, getResponseHeaders, convertHeadersResponseHeaders } from "../utils/request";
-import { modifyHtml } from "../utils/html";
+import { modifyHtml } from "../utils/jsendpoint";
 
 /**
  * Handle upload proxy requests to MangaDex

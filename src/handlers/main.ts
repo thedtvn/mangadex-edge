@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { DEFAULT_HEADERS } from "../constants/headers";
 import { sendRequest, getResponseHeaders } from "../utils/request";
-import { modifyHtml } from "../utils/html";
+import { modifyJS } from "../utils/jsendpoint";
 
 /**
  * Handle main proxy requests to MangaDex
@@ -27,12 +27,12 @@ export async function handleMainProxy(c: Context) {
         return c.status(res.status as any);
     }
     
-    if (responseHeaders["content-type"]?.every((type) => !type.includes("text/html"))) {
+    if (responseHeaders["content-type"]?.every((type) => !type.includes("application/javascript"))) {
         const body = await res.arrayBuffer();
         return c.body(body, res.status as any, responseHeaders);
     }
 
-    const bodyHtml = await res.text();
-    const modifiedHtml = modifyHtml(bodyHtml, url);
-    return c.html(modifiedHtml, 200, responseHeaders);
+    const modifiedJS = await modifyJS(await res.text(), url);
+
+    return c.html(modifiedJS, 200, responseHeaders);
 }
